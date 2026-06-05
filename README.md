@@ -20,12 +20,6 @@ pip install -r requirements.txt
 streamlit run streamlit_app.py
 ```
 
-## Deploy on Streamlit Community Cloud
-
-1. Push this folder to a GitHub repo.
-2. Go to https://share.streamlit.io → **Create app**.
-3. Pick the repo, branch `main`, main file `streamlit_app.py` → **Deploy**.
-
 ## Files
 
 - `streamlit_app.py` — the Streamlit UI
@@ -33,4 +27,3 @@ streamlit run streamlit_app.py
 - `test_fit.py` — regression test: label content always fits inside the box
   (`python test_fit.py`)
 
-Sample files (store sale list / reference PPTs) are kept out of the public repo.
