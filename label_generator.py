@@ -320,9 +320,8 @@ def fit_label_sizes(label, small_lines):
 
 
 def format_price(price):
-    """8.99 -> '8.99', 16.5 -> '16.5', 6 -> '6.00' (matches the sample)."""
-    text = f"{price:g}"
-    return text if "." in text else f"{text}.00"
+    """Always two decimals: 8.99 -> '8.99', 2.5 -> '2.50', 6 -> '6.00'."""
+    return f"{price:.2f}"
 
 
 def _set_run(run, text, size, color=BLACK):
