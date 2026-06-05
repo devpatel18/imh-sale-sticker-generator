@@ -91,8 +91,8 @@ st.set_page_config(page_title="Sale Sticker Generator", page_icon="🏷️", lay
 
 st.title("🏷️ Sale Sticker Generator")
 st.caption(
-    "Upload the sale-list Excel (columns: item, price). Blank rows and 'ADD' "
-    "noise are ignored. Review/fix the parsed labels below, then download the PPT "
+    "Upload the sale-list Excel (columns: item, price). "
+    "Review/fix the parsed labels below, then download the PPT "
     "(4 labels per page)."
 )
 
