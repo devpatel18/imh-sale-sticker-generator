@@ -1,0 +1,10 @@
+.venv/
+test_output.pptx
+__pycache__/
+.DS_Store
+stress_test.pptx
+sample_sale_list.xlsx
+sample.pptx
+dry_items_sample.pptx
+sample_sale_list*.xlsx
+*.xlsx
