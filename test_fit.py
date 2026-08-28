@@ -9,12 +9,32 @@ the same width/height model the generator uses (estimated wrap simulation):
 """
 
 from label_generator import (
-    parse_excel, fit_label_sizes, fit_note_size, format_price,
+    parse_excel, parse_item, fit_label_sizes, fit_note_size, format_price,
     _est_width, _longest_word_w, _wrap_count, _line_h,
     USABLE_W, USABLE_H, EXP_PT,
 )
 
 NOTE = "No Return, No Exchange on Sale Items — All Sales Final"
+
+# (raw item text, expected brand, name, qty) — parsing cases worth pinning.
+PARSE_CASES = [
+    # Bare trailing unit belongs after the price, not in the name.
+    ("Apple-Fuji-lb", "Apple", "Fuji", "lb"),
+    ("Ripe Papaya lb", "Ripe", "Papaya", "lb"),
+    ("Broccoli-lb", "", "Broccoli", "lb"),
+    ("Carrot -lb", "", "Carrot", "lb"),
+    ("Cauliflower-Pc", "", "Cauliflower", "pc"),
+    ("Spinach Bunch-ea", "Spinach", "Bunch", "ea"),
+    ("Spinach-Cello- EA", "Spinach", "Cello", "ea"),
+    ("Squash-Sinqua (Turiya) lb", "Squash", "Sinqua (Turiya)", "lb"),
+    ("Orange", "", "Orange", ""),
+    # Numbered quantities keep working.
+    ("AMUL BUTTER SALTED -500 GM", "Amul", "Butter Salted", "500 gm"),
+    ("Chana Dal 2 LBS", "Chana", "Dal", "2 lb"),
+    ("Basmati-10", "", "Basmati", "10"),
+    # A name word must not be mistaken for a unit.
+    ("Leaves-Mint", "Leaves", "Mint", ""),
+]
 
 ADVERSARIAL = [
     # (brand, name, price, qty) — worst cases we could think of
@@ -59,6 +79,10 @@ def main():
     # Note must always be a single line.
     assert _est_width(NOTE, fit_note_size(NOTE)) <= USABLE_W
 
+    for raw, brand, name, qty in PARSE_CASES:
+        assert parse_item(raw) == (brand, name, qty), \
+            f"parse_item({raw!r}) -> {parse_item(raw)}, expected {(brand, name, qty)}"
+
     for brand, name, price, qty in ADVERSARIAL:
         label = {"brand": brand, "name": name.strip(), "price": price, "qty": qty}
         for small_lines in (0, 1, 2):
@@ -74,7 +98,7 @@ def main():
             check(label, small_lines, "sample")
             n += 1
 
-    print(f"OK — {n} label/option combinations all fit "
+    print(f"OK — {len(PARSE_CASES)} parse cases; {n} label/option combinations all fit "
           f"({len(ADVERSARIAL)} adversarial + {len(sample)} sample labels)")
 
 

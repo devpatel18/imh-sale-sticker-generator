@@ -9,6 +9,9 @@ PowerPoint of sale labels, 4 per page.
 - Each item is split into **brand** (line 1), **product name** (line 2) and
   **quantity/unit** (taken from the text after the `-`, e.g. `-500 GM`), shown
   after the price as `$ 8.99/500 gm`.
+- A trailing unit with no number (`Apple-Fuji-lb`, `Spinach Bunch-ea`,
+  `Cauliflower-Pc`) counts as the quantity too, so it prints as `$ 0.99/lb`
+  instead of ending up in the product name.
 - A red `Sale Exp: <date>` line is added (date picked in the app, can be turned off).
 - Parsed labels appear in an editable table — fix spellings/quantities and untick
   items before downloading.

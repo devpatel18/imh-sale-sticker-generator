@@ -2,6 +2,8 @@
 
 Excel format: two columns — item description and price. The quantity/unit is
 embedded in the item text, usually after a '-' (e.g. "AMUL BUTTER SALTED -500 GM").
+A trailing unit with no number ("Apple-Fuji-lb", "Spinach Bunch-ea") is also
+treated as the quantity, so it lands after the price instead of in the name.
 Blank rows and noise rows like "ADD" are ignored.
 
 Label format (matches dry_items_sample.pptx):
@@ -26,10 +28,16 @@ from pptx.util import Inches, Pt
 # ---------------------------------------------------------------------------
 
 # Units that may follow a number in the item text (case-insensitive).
-UNITS = r"(?:GMS?|G|KGS?|OZ|LBS?|LTRS?|LT|L|ML|CT|PCS?|PACKS?|PK)"
+UNITS = r"(?:GMS?|G|KGS?|OZ|LBS?|LTRS?|LT|L|ML|CT|PCS?|PACKS?|PK|EACH|EA)"
 
 # A quantity expression: "500 GM", "5LTR", "26.04 OZ", "1.2 KG", "25 ct" ...
 QTY_RE = re.compile(rf"(\d+(?:\.\d+)?)\s*({UNITS})\b\.?", re.IGNORECASE)
+
+# Units that stand alone with no number, at the end of the item text:
+# "Apple-Fuji-lb", "Spinach Bunch-ea", "Cauliflower-Pc". Only unambiguous
+# words are listed — single letters like "G"/"L" would eat real name words.
+BARE_UNITS = r"(?:LBS?|EACH|EA|PCS?|CT)"
+BARE_UNIT_RE = re.compile(rf"[-\u2013\s]\s*({BARE_UNITS})\.?\s*$", re.IGNORECASE)
 
 # Special pack descriptions used as-is for the qty part of the label.
 SPECIAL_QTY_RE = re.compile(r"FAMILY\s+PACK|VALUE\s+PACK|JUMBO\s+PACK", re.IGNORECASE)
@@ -60,6 +68,7 @@ UNIT_NORMALIZATION = {
     "CT": "ct",
     "PC": "pc", "PCS": "pcs",
     "PK": "pack", "PACK": "pack", "PACKS": "pack",
+    "EA": "ea", "EACH": "ea",
 }
 
 # Lowercase connector words that stay lowercase in title case (except first word).
@@ -117,10 +126,15 @@ def parse_item(raw):
             qty = normalize_qty(last.group(1), last.group(2))
             text = (text[:last.start()] + " " + text[last.end():]).strip()
         else:
-            m = TRAILING_NUM_RE.search(text)
+            m = BARE_UNIT_RE.search(text)
             if m:
-                qty = m.group(1)
+                qty = UNIT_NORMALIZATION.get(m.group(1).upper(), m.group(1).lower())
                 text = text[:m.start()].strip()
+            else:
+                m = TRAILING_NUM_RE.search(text)
+                if m:
+                    qty = m.group(1)
+                    text = text[:m.start()].strip()
 
     # Clean leftover separators / stray single chars at the edges.
     text = re.sub(r"[-–]\s*[O0]?\s*$", "", text)
